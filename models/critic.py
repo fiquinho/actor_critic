@@ -1,7 +1,6 @@
 import logging
 import sys
 import os
-from typing import List
 from pathlib import Path
 
 import tensorflow as tf
@@ -10,7 +9,7 @@ from tensorflow.keras import Model
 from tensorflow.keras.layers import Dense
 
 SCRIPT_DIR = Path(os.path.abspath(sys.argv[0]))
-sys.path.append(str(SCRIPT_DIR.parent.parent.parent.parent))
+sys.path.append(str(SCRIPT_DIR.parent.parent))
 
 from code_utils import CriticConfig
 
@@ -18,62 +17,78 @@ from code_utils import CriticConfig
 logger = logging.getLogger()
 
 
-class Critic(Model):
-    """Feed Forward Neural Network for value function approximation."""
+def critic_feed_forward_model_constructor(input_dim):
+    """Creates a tf.keras.Model subclass for a Feed Forward Neural Network
+    for value function approximation.
+    Args:
+        input_dim: The length of the state vector
 
-    def __init__(self, critic_config: CriticConfig):
-        """Creates a new FFNN for value function approximation. Implements all needed
-        methods from tf.keras.Model.
+    Returns:
+        A class to instantiate the model object.
+    """
 
-        Args:
-            critic_config: The model configurations
+    class Critic(Model):
+        """Feed Forward Neural Network for value function approximation.
+        The input size is already defined.
         """
 
-        self.model_config = critic_config
-        super(Critic, self).__init__()
+        def __init__(self, critic_config: CriticConfig):
+            """Creates a new FFNN for value function approximation. Implements all needed
+            methods from tf.keras.Model.
 
-        self.hidden_layers = []
-        for i in self.model_config.layer_sizes:
-            self.hidden_layers.append(Dense(i, activation=self.model_config.hidden_activation,
-                                            name=f"hidden_{len(self.hidden_layers)}"))
+            Args:
+                critic_config: The model configurations
+            """
 
-        self.value = Dense(1, activation=self.model_config.output_activation, name="value")
+            self.model_config = critic_config
+            self.input_size = input_dim
+            super(Critic, self).__init__()
 
-        self.loss_object = tf.keras.losses.MeanSquaredError()
-        self.optimizer = tf.keras.optimizers.Adam(learning_rate=self.model_config.learning_rate)
+            self.hidden_layers = []
+            for i in self.model_config.layer_sizes:
+                self.hidden_layers.append(Dense(i, activation=self.model_config.hidden_activation,
+                                                name=f"hidden_{len(self.hidden_layers)}"))
 
-    def get_config(self):
-        """Used by tf.keras to load a saved model."""
-        return {"layer_sizes": self.model_config.layer_sizes,
-                "learning_rate": self.model_config.learning_rate,
-                "hidden_activation": self.model_config.hidden_activation,
-                "output_activation": self.model_config.output_activation}
+            self.value = Dense(1, activation=self.model_config.output_activation, name="value")
 
-    @tf.function
-    def call(self, inputs: tf.Tensor) -> tf.Tensor:
-        """See base Class."""
+            self.loss_object = tf.keras.losses.MeanSquaredError()
+            self.optimizer = tf.keras.optimizers.Adam(learning_rate=self.model_config.learning_rate)
 
-        logger.info("[Retrace] call")
-        x = inputs
-        for layer in self.hidden_layers:
-            x = layer(x)
-        value = self.value(x)
+        def get_config(self):
+            """Used by tf.keras to load a saved model."""
+            return {"layer_sizes": self.model_config.layer_sizes,
+                    "learning_rate": self.model_config.learning_rate,
+                    "hidden_activation": self.model_config.hidden_activation,
+                    "output_activation": self.model_config.output_activation}
 
-        return value
+        @tf.function(input_signature=(tf.TensorSpec(shape=[None, input_dim], dtype=tf.float32), ))
+        def call(self, inputs: tf.Tensor) -> tf.Tensor:
+            """See base Class."""
 
-    @tf.function
-    def train_step(self, states: tf.Tensor, discounted_rewards: tf.Tensor) -> (tf.Tensor, tf.Tensor, tf.Tensor):
-        """See base Class."""
+            logger.info("[Retrace] call")
+            x = inputs
+            for layer in self.hidden_layers:
+                x = layer(x)
+            value = self.value(x)
 
-        logger.info("[Retrace] train_step")
-        with tf.GradientTape() as tape:
-            values = self(states)
-            loss = self.loss_object(discounted_rewards, values)
+            return value
 
-        gradients = tape.gradient(loss, self.trainable_variables)
-        self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))
+        @tf.function(input_signature=[tf.TensorSpec(shape=[None, input_dim], dtype=tf.float32),
+                                      tf.TensorSpec(shape=[None], dtype=tf.int32)])
+        def train_step(self, states: tf.Tensor, discounted_rewards: tf.Tensor) -> (tf.Tensor, tf.Tensor, tf.Tensor):
+            """See base Class."""
 
-        return values, loss, gradients
+            logger.info("[Retrace] train_step")
+            with tf.GradientTape() as tape:
+                values = self(states)
+                loss = self.loss_object(discounted_rewards, values)
+
+            gradients = tape.gradient(loss, self.trainable_variables)
+            self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))
+
+            return values, loss, gradients
+
+    return Critic
 
 
 def test():
@@ -88,9 +103,10 @@ def test():
     }
 
     model_config = CriticConfig(**sample_config)
-    model = Critic(model_config)
+    critic_constructor = critic_feed_forward_model_constructor(3)
+    model = critic_constructor(model_config)
 
-    state = np.array([[1.], [2.], [3.]])
+    state = np.array([[1., 0., 0.], [0., 1., 0.], [0., 0., 1.]])
     discounted_rewards = np.array([[0.5], [1.], [1.]])
 
     values, loss, gradients = model.train_step(state, discounted_rewards)
