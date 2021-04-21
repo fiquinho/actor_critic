@@ -1,22 +1,21 @@
 import logging
+import sys
+import os
 from typing import List
-from dataclasses import dataclass
+from pathlib import Path
 
 import tensorflow as tf
 import numpy as np
 from tensorflow.keras import Model
 from tensorflow.keras.layers import Dense
 
+SCRIPT_DIR = Path(os.path.abspath(sys.argv[0]))
+sys.path.append(str(SCRIPT_DIR.parent.parent.parent.parent))
+
+from code_utils import CriticConfig
+
 
 logger = logging.getLogger()
-
-
-@dataclass
-class CriticConfig(object):
-    layer_sizes: List[int]
-    learning_rate: float
-    hidden_activation: str = "relu"
-    output_activation: str = "linear"
 
 
 class Critic(Model):
