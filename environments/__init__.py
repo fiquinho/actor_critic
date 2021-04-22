@@ -1,4 +1,5 @@
 from .cart_pole import CartPoleEnvironment
+from .environments import Episode
 
 
 def get_env(name: str):
