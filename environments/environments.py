@@ -1,6 +1,10 @@
 import numpy as np
 
 
+# Small epsilon value for stabilizing division operations
+EPS = np.finfo(np.float32).eps.item()
+
+
 class Episode(object):
     """A single episode of an environment."""
 
@@ -36,11 +40,21 @@ class Episode(object):
         discounted_reward_list = []
         reward_list.reverse()
         for i in range(len(reward_list)):
-            discounted_reward = self.discount * sum(discounted_reward_list) + reward_list[i]
-            discounted_reward_list.append(discounted_reward)
+            if i == 0:
+                discounted_reward = reward_list[i]
+                discounted_reward_list.append(discounted_reward)
+            else:
+                discounted_reward = self.discount * discounted_reward_list[i - 1] + reward_list[i]
+                discounted_reward_list.append(discounted_reward)
 
         discounted_reward_list.reverse()
-        return np.array(discounted_reward_list, dtype=np.float32)
+        discounted_reward_list = np.array(discounted_reward_list, dtype=np.float32)
+
+        # Standardize
+        returns = ((discounted_reward_list - np.mean(discounted_reward_list)) /
+                   (np.std(discounted_reward_list) + EPS))
+
+        return returns
 
     def __len__(self) -> int:
         """

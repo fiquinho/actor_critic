@@ -1,5 +1,9 @@
+from typing import List
+
 import gym
 import numpy as np
+
+from .environments import Episode
 
 
 class CartPoleEnvironment(object):
@@ -35,8 +39,22 @@ class CartPoleEnvironment(object):
     def render_environment(self):
         self.env.render()
 
+    @staticmethod
+    def pass_test(rewards: List[float]):
+        if np.mean(rewards) >= 195.:
+            return True
+        else:
+            return False
+
     def close(self):
         self.env.close()
+
+    @staticmethod
+    def win_condition(episode: Episode):
+        if episode.total_reward >= 195.:
+            return True
+        else:
+            return False
 
 
 def main():
