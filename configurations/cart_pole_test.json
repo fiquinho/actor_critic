@@ -1,0 +1,24 @@
+{
+  "agent_config": {
+    "name": "cart_pole_test",
+    "desc": "Testing training script",
+    "env": "cart_pole",
+    "discount": 0.99
+  },
+  "critic_config": {
+    "layer_sizes": [40, 40],
+    "learning_rate": 0.0001,
+    "hidden_activation": "relu",
+    "output_activation": "linear"
+  },
+  "actor_config": {
+    "layer_sizes": [40, 40],
+    "learning_rate": 0.0001,
+    "hidden_activation": "relu"
+  },
+  "training_config": {
+    "train_steps": 50,
+    "save_policy_every": 5,
+    "show_every": 5
+  }
+}
