@@ -76,7 +76,7 @@ def critic_feed_forward_model_constructor(input_dim):
             return value
 
         @tf.function(input_signature=[tf.TensorSpec(shape=[None, input_dim], dtype=tf.float32),
-                                      tf.TensorSpec(shape=[None], dtype=tf.int32)])
+                                      tf.TensorSpec(shape=[None], dtype=tf.float32)])
         def train_step(self, states: tf.Tensor, discounted_rewards: tf.Tensor) -> (tf.Tensor, tf.Tensor, tf.Tensor):
             """See base Class."""
 
