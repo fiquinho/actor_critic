@@ -152,18 +152,13 @@ class BaseActorCriticAgent(object):
                 logger.info(f"Checkpoint saved for step {training_steps}")
                 break
 
-        # TODO
-        moving_avg = np.convolve(train_steps_rewards,
-                                 np.ones((training_config.train_steps,)) / training_config.train_steps,
-                                 mode='valid')
-
         # Load best checkpoint and save it
         logger.info(f"Best model in step {best_step} - {best_checkpoints[0]}")
         self.ckpts_manager.actor.restore(best_checkpoints[0])
         test_reward = self.test_agent(episodes=100)
         logger.info(f"Best model test: {100} episodes mean reward = {test_reward}")
         self.save_agent()
-        self.plot_training_info(moving_avg, self.agent_path)
+        self.plot_training_info(train_steps_rewards, self.agent_path)
 
         return test_reward
 
@@ -189,23 +184,23 @@ class BaseActorCriticAgent(object):
             logger.info(f"Restored model from checkpoint {self.ckpts_manager.actor_manager.latest_checkpoint}")
 
     @staticmethod
-    def plot_training_info(moving_avg: np.array, agent_folder: Path = None):
+    def plot_training_info(rewards: np.array, agent_folder: Path = None):
         """Plots the training reward moving average.
 
         Args:
-            moving_avg: The moving average data
+            rewards: The rewards
             agent_folder: Where to save the generated plot
         """
         plt.figure(figsize=(5, 5))
 
         # Moving average plot
-        plt.plot([i for i in range(len(moving_avg))], moving_avg)
+        plt.plot([i for i in range(len(rewards))], rewards)
         plt.ylabel(f"Reward")
         plt.xlabel("Training step #")
-        plt.title("Reward moving average")
+        plt.title("Rewards")
 
         if agent_folder is not None:
-            plt.savefig(Path(agent_folder, "reward_moving_average.png"))
+            plt.savefig(Path(agent_folder, "training_rewards.png"))
 
     def play_game(self, plot_game: bool = False, delay: float = None) -> Episode:
         """Plays a full episode using the current policy.
