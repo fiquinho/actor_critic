@@ -8,6 +8,7 @@ import wandb
 import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
+from tqdm import tqdm
 
 SCRIPT_DIR = Path(os.path.abspath(sys.argv[0]))
 sys.path.append(str(SCRIPT_DIR.parent.parent.parent.parent))
@@ -34,7 +35,7 @@ class BaseActorCriticAgent(object):
             agent_path: The output folder for the model files
             config: The configurations for this agent
         """
-        self.env = get_env(config.agent_config.env)
+        self.env = get_env(config.agent_config.env)()
         self.agent_path = agent_path
         self.config = config
         self.models_path = Path(agent_path, "models")
@@ -43,7 +44,7 @@ class BaseActorCriticAgent(object):
         self.critic = critic_constructor(self.config.critic_config)
 
         actor_constructor = feed_forward_discrete_policy_constructor(self.env.state_space, self.env.action_space)
-        self.actor = actor_constructor(self.config.agent_config)
+        self.actor = actor_constructor(self.config.actor_config)
 
         self.ckpts_manager = CheckpointsManager(self.models_path, self.actor, self.critic)
 
@@ -58,7 +59,7 @@ class BaseActorCriticAgent(object):
             state = self.env.get_environment_state()
             tf_current_state = tf.constant(np.array([state]), dtype=tf.float32)
             action = self.actor.produce_actions(tf_current_state)[0][0]
-            next_state, reward, done = self.env.environment_step(action)
+            next_state, reward, done = self.env.environment_step(int(action))
 
             states.append(state)
             actions.append(action)
@@ -84,7 +85,7 @@ class BaseActorCriticAgent(object):
         best_step = None
         best_checkpoints = None
         best_score = float("-inf")
-        for i in range(training_config.train_steps):
+        for i in tqdm(range(training_config.train_steps)):
             episode = self.generate_episode()
             train_steps_rewards.append(episode.total_reward)
 
@@ -99,9 +100,8 @@ class BaseActorCriticAgent(object):
             values_batch = self.critic(states_batch)
 
             discounted_rewards_batch = tf.constant(episode.discounted_rewards, dtype=np.float32)
-            actions_batch = tf.constant(episode.actions, dtype=np.float32)
-            states_batch = tf.constant(episode.states, dtype=np.float32)
-            advantage_batch = discounted_rewards_batch - values_batch
+            actions_batch = tf.constant(episode.actions, dtype=np.int32)
+            advantage_batch = discounted_rewards_batch - tf.reshape(values_batch, -1)
 
             # noinspection PyArgumentList
             policy_outputs, loss, log_probabilities = self.actor.train_step(
@@ -121,7 +121,14 @@ class BaseActorCriticAgent(object):
             except ValueError:
                 logger.info(f"Failed to save log probabilities: {log_probabilities}")
             wandb.log({"discounted_rewards": wandb.Histogram(discounted_rewards_batch)}, step=training_steps)
-            wandb.log({"advantages": wandb.Histogram(advantage_batch)}, step=training_steps)
+            try:
+                wandb.log({"advantages": wandb.Histogram(advantage_batch)}, step=training_steps)
+            except ValueError:
+                logger.info(f"Failed to save advantages: {advantage_batch}")
+            try:
+                wandb.log({"values": wandb.Histogram(values_batch)}, step=training_steps)
+            except ValueError:
+                logger.info(f"Failed to save values: {values_batch}")
 
             training_steps += 1
             self.ckpts_manager.step_checkpoints()
@@ -134,16 +141,25 @@ class BaseActorCriticAgent(object):
                         best_score = episode.total_reward
                         best_step = i
                         best_checkpoints = self.ckpts_manager.save_ckpts()
-                        logger.info(f"New best model - Test reward = {episode.total_reward}")
+                        logger.info(f"New best model - Reward = {episode.total_reward}")
                         logger.info(f"Checkpoint saved for step {training_steps}")
 
+            if self.env.pass_test(train_steps_rewards[-20:]):
+                logger.info("The agent trained successfully!!")
+                best_step = i
+                best_checkpoints = self.ckpts_manager.save_ckpts()
+                logger.info(f"New best model - Reward = {episode.total_reward}")
+                logger.info(f"Checkpoint saved for step {training_steps}")
+                break
+
+        # TODO
         moving_avg = np.convolve(train_steps_rewards,
-                                 np.ones((training_config.show_every,)) / training_config.show_every,
+                                 np.ones((training_config.train_steps,)) / training_config.train_steps,
                                  mode='valid')
 
         # Load best checkpoint and save it
         logger.info(f"Best model in step {best_step} - {best_checkpoints[0]}")
-        self.ckpts_manager.actor_manager.restore(best_checkpoints[0])
+        self.ckpts_manager.actor.restore(best_checkpoints[0])
         test_reward = self.test_agent(episodes=100)
         logger.info(f"Best model test: {100} episodes mean reward = {test_reward}")
         self.save_agent()
@@ -216,7 +232,7 @@ class BaseActorCriticAgent(object):
             tf_current_state = tf.constant(np.array([state]), dtype=tf.float32)
             action = self.actor.produce_actions(tf_current_state)[0][0]
 
-            new_state, reward, done = self.env.environment_step(action)
+            new_state, reward, done = self.env.environment_step(int(action))
 
             states.append(state)
             rewards.append(reward)
