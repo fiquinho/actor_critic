@@ -40,10 +40,10 @@ class BaseActorCriticAgent(object):
         self.config = config
         self.models_path = Path(agent_path, "models")
 
-        critic_constructor = critic_feed_forward_model_constructor(self.env.state_space)
+        critic_constructor = critic_feed_forward_model_constructor(self.env.state_space_n)
         self.critic = critic_constructor(self.config.critic_config)
 
-        actor_constructor = feed_forward_discrete_policy_constructor(self.env.state_space, self.env.action_space)
+        actor_constructor = feed_forward_discrete_policy_constructor(self.env.state_space_n, self.env.action_space_n)
         self.actor = actor_constructor(self.config.actor_config)
 
         self.ckpts_manager = CheckpointsManager(self.models_path, self.actor, self.critic)

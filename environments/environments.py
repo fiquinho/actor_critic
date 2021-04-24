@@ -1,4 +1,5 @@
 import numpy as np
+from typing import List
 
 
 # Small epsilon value for stabilizing division operations
@@ -62,3 +63,64 @@ class Episode(object):
             The length of the episode.
         """
         return len(self.states)
+
+
+class Environment(object):
+    """Base class to create environments that can be used to train an
+    actor critic agent. All methods need to be implemented.
+    """
+    def __init__(self, env, action_space_n: int, state_space_n: int,
+                 actions: List[str], state_names: List[str]=None):
+        """Create a new Environment object.
+
+        Args:
+            env: An object with the environment implementation
+            action_space_n: The number of possible actions
+            state_space_n: The length of the state vector representation
+            actions: A list with the actions names
+            state_names: A list with the state attributes names
+        """
+        self.env = env
+        self.action_space_n = action_space_n
+        self.state_space_n = state_space_n
+        self.actions = actions
+        self.state_names = state_names
+
+    def reset_environment(self):
+        """Reset the environment to start a new episode."""
+        raise NotImplementedError
+
+    def get_environment_state(self) -> np.array:
+        """Get the current state of the environment. Must be ready to feed to
+        the neural network.
+
+        Returns:
+            The current state (np.array)
+        """
+        raise NotImplementedError
+
+    def environment_step(self, action: int) -> (np.array, float, bool):
+        """Make a move in the environment with given action.
+
+        Args:
+            action: The action index or action value
+
+        Returns:
+            next_environment_state (np.array), reward (float), terminated_environment (bool)
+        """
+        raise NotImplementedError
+
+    def render_environment(self):
+        """Render the environment."""
+        raise NotImplementedError
+
+    @staticmethod
+    def win_condition(episode: Episode):
+        raise NotImplementedError
+
+    def close(self):
+        raise NotImplementedError
+
+    @staticmethod
+    def pass_test(rewards: List[float]):
+        raise NotImplementedError

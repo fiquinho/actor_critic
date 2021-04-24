@@ -3,19 +3,21 @@ from typing import List
 import gym
 import numpy as np
 
-from .environments import Episode
+from .environments import Episode, Environment
 
 
-class CartPoleEnvironment(object):
+class CartPoleEnvironment(Environment):
 
     def __init__(self):
-        self.env = gym.make("CartPole-v0")
-        self.action_space = 2
-        self.state_space = self.env.observation_space.shape[0]
-        self.actions = ["left", "right"]
-        self.state_names = ["cart_position", "cart_velocity",
-                            "pole_angle", "pole_angular_velocity"]
-        assert self.state_space == len(self.state_names)
+        env = gym.make("CartPole-v0")
+        action_space = 2
+        state_space = env.observation_space.shape[0]
+        actions = ["left", "right"]
+        state_names = ["cart_position", "cart_velocity",
+                       "pole_angle", "pole_angular_velocity"]
+        assert state_space == len(state_names)
+
+        Environment.__init__(self, env, action_space, state_space, actions, state_names)
 
     def reset_environment(self):
         self.env.reset()
