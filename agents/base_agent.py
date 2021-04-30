@@ -104,6 +104,7 @@ class BaseActorCriticAgent(object):
             advantage_batch = discounted_rewards_batch - tf.reshape(values_batch, -1)
 
             # noinspection PyArgumentList
+            action_probabilities = self.actor.get_probabilities(states_batch)
             policy_outputs, loss, log_probabilities = self.actor.train_step(
                 states_batch, actions_batch, advantage_batch)
 
@@ -113,6 +114,11 @@ class BaseActorCriticAgent(object):
                 for state_idx, state in enumerate(self.env.state_names):
                     state_attribute_hist = states_batch[:, state_idx]
                     wandb.log({f"{state}": wandb.Histogram(state_attribute_hist)}, step=training_steps)
+
+            if self.env.actions is not None:
+                for action_idx, action in enumerate(self.env.actions):
+                    action_attribute_hist = action_probabilities[:, action_idx]
+                    wandb.log({f"{action}": wandb.Histogram(action_attribute_hist)}, step=training_steps)
 
             wandb.log({'training_step': training_steps, 'loss': loss, 'episode_reward': episode.total_reward},
                       step=training_steps)
