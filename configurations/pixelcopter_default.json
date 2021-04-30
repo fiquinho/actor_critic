@@ -1,0 +1,24 @@
+{
+  "agent_config": {
+    "name": "pixelcopter_default_06",
+    "desc": "Pixelcopter (win=100) with fixed normalization for state. Bigger NN.",
+    "env": "pixelcopter",
+    "discount": 0.99
+  },
+  "critic_config": {
+    "layer_sizes": [256, 128],
+    "learning_rate": 0.001,
+    "hidden_activation": "relu",
+    "output_activation": "linear"
+  },
+  "actor_config": {
+    "layer_sizes": [256, 128],
+    "learning_rate": 0.001,
+    "hidden_activation": "relu"
+  },
+  "training_config": {
+    "train_steps": 20000,
+    "save_policy_every": 1000,
+    "show_every": 500
+  }
+}
