@@ -105,10 +105,10 @@ class BaseActorCriticAgent(object):
 
             # noinspection PyArgumentList
             action_probabilities = self.actor.get_probabilities(states_batch)
-            policy_outputs, loss, log_probabilities = self.actor.train_step(
+            policy_outputs, actor_loss, log_probabilities = self.actor.train_step(
                 states_batch, actions_batch, advantage_batch)
 
-            values, loss, _ = self.critic.train_step(states_batch, discounted_rewards_batch)
+            values, critic_loss, _ = self.critic.train_step(states_batch, discounted_rewards_batch)
 
             if self.env.state_names is not None:
                 for state_idx, state in enumerate(self.env.state_names):
@@ -120,7 +120,8 @@ class BaseActorCriticAgent(object):
                     action_attribute_hist = action_probabilities[:, action_idx]
                     wandb.log({f"{action}": wandb.Histogram(action_attribute_hist)}, step=training_steps)
 
-            wandb.log({'training_step': training_steps, 'loss': loss, 'episode_reward': episode.total_reward},
+            wandb.log({'training_step': training_steps, 'actor_loss': actor_loss,
+                       'critic_loss': critic_loss, 'episode_reward': episode.total_reward},
                       step=training_steps)
             try:
                 wandb.log({"log_probabilities": wandb.Histogram(log_probabilities)}, step=training_steps)
