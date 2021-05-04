@@ -1,23 +1,23 @@
 {
   "agent_config": {
     "name": "cart_pole_default",
-    "desc": "Testing training script",
+    "desc": "Default configuration to train a CartPole agent",
     "env": "cart_pole",
     "discount": 0.99
   },
   "critic_config": {
     "layer_sizes": [128, 128],
-    "learning_rate": 0.01,
+    "learning_rate": 0.001,
     "hidden_activation": "relu",
     "output_activation": "linear"
   },
   "actor_config": {
     "layer_sizes": [128, 128],
-    "learning_rate": 0.01,
+    "learning_rate": 0.001,
     "hidden_activation": "relu"
   },
   "training_config": {
-    "train_steps": 200,
+    "train_steps": 500,
     "save_policy_every": 20,
     "show_every": 20
   }

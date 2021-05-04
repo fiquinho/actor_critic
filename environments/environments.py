@@ -51,11 +51,7 @@ class Episode(object):
         discounted_reward_list.reverse()
         discounted_reward_list = np.array(discounted_reward_list, dtype=np.float32)
 
-        # Standardize
-        returns = ((discounted_reward_list - np.mean(discounted_reward_list)) /
-                   (np.std(discounted_reward_list) + EPS))
-
-        return returns
+        return discounted_reward_list
 
     def __len__(self) -> int:
         """
