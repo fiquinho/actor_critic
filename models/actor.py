@@ -91,7 +91,7 @@ def feed_forward_discrete_policy_constructor(input_dim, output_dim):
                 logits = self(sates)
                 action_masks = tf.one_hot(actions, self.output_size)
                 log_probabilities = tf.reduce_sum(action_masks * self._get_log_probabilities(logits), axis=-1)
-                loss = -tf.reduce_mean(weights * log_probabilities)
+                loss = -tf.reduce_sum(weights * log_probabilities)
 
             gradients = tape.gradient(loss, self.trainable_variables)
             self.optimizer.apply_gradients(zip(gradients, self.trainable_variables))
