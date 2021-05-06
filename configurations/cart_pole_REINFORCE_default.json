@@ -1,8 +1,9 @@
 {
   "agent_config": {
-    "name": "cart_pole_default",
-    "desc": "Default configuration to train a CartPole agent",
+    "name": "cart_pole_REINFORCE_default",
+    "desc": "Default configuration to train REINFORCE agent on CartPole",
     "env": "cart_pole",
+    "agent_type": "REINFORCE",
     "discount": 0.99
   },
   "critic_config": {
