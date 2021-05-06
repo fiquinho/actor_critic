@@ -1,8 +1,9 @@
 {
   "agent_config": {
-    "name": "pixelcopter_default",
-    "desc": "Pixelcopter experiment",
+    "name": "pixelcopter_REINFORCE_test",
+    "desc": "Testing REINFORCE training script on Pixelcopter",
     "env": "pixelcopter",
+    "agent_type": "REINFORCE",
     "discount": 0.99
   },
   "critic_config": {

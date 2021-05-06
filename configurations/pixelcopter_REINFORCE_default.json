@@ -1,8 +1,9 @@
 {
   "agent_config": {
-    "name": "pixelcopter_default_06",
-    "desc": "Pixelcopter (win=100) with fixed normalization for state. Bigger NN.",
+    "name": "pixelcopter_REINFORCE_default",
+    "desc": "Default configuration to train REINFORCE agent on Pixelcopter ",
     "env": "pixelcopter",
+    "agent_type": "REINFORCE",
     "discount": 0.99
   },
   "critic_config": {
