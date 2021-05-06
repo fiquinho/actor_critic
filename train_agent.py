@@ -12,7 +12,7 @@ import git
 import tensorflow as tf
 
 from code_utils import prepare_file_logger, prepare_stream_logger, ConfigManager
-from agents import BaseActorCriticAgent
+from agents import get_agent
 
 logger = logging.getLogger()
 prepare_stream_logger(logger, logging.INFO)
@@ -76,13 +76,14 @@ def main():
 
     wandbrun = wandb.init(project=f"AC-{config.agent_config.env}",
                           name=config.agent_config.name,
+                          group=config.agent_config.agent_type,
                           notes=config.agent_config.desc,
                           config=config.as_single_dict(),
                           reinit=True,
                           dir=f"experiments/{config.agent_config.name}")
 
     # Create agent
-    agent = BaseActorCriticAgent(agent_path=agent_folder, config=config)
+    agent = get_agent(config.agent_config.agent_type)(agent_path=agent_folder, config=config)
 
     start_time = time.time()
     test_reward = agent.train_policy(training_config=config.training_config)

@@ -24,6 +24,7 @@ class BaseAgentConfig(object):
     name: str
     desc: str
     env: str
+    agent_type: str
     discount: float
 
 

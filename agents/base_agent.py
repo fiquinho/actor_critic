@@ -4,7 +4,6 @@ import os
 import sys
 from pathlib import Path
 
-import wandb
 import numpy as np
 import tensorflow as tf
 import matplotlib.pyplot as plt
@@ -69,6 +68,17 @@ class BaseActorCriticAgent(object):
 
         return episode
 
+    def train_step(self, step_n: int) -> int:
+        """
+        Make a single training step for this method
+        Args:
+            step_n: The current training step number
+
+        Returns:
+            The total reward from the last completed episode
+        """
+        raise NotImplementedError()
+
     def train_policy(self, training_config: TrainingConfig) -> float:
         """Train the agent to solve the current environment.
 
@@ -78,85 +88,43 @@ class BaseActorCriticAgent(object):
             The final policy test mean reward
         """
 
-        train_steps_rewards = []
+        train_episodes_rewards = []
         start_time = time.time()
-        training_steps = 0
         progress_save = int(training_config.train_steps * 0.05)
         best_step = None
         best_checkpoints = None
         best_score = float("-inf")
         for i in tqdm(range(training_config.train_steps)):
-            episode = self.generate_episode()
-            train_steps_rewards.append(episode.total_reward)
+
+            episode_reward = self.train_step(i)
 
             if training_config.show_every is not None:
                 if i > 0 and not i % training_config.show_every:
                     logger.info(f"Training step N° {i} - "
-                                f"Episodes reward: {episode.total_reward} - "
+                                f"Last Episode reward: {episode_reward} - "
                                 f"Batch time = {time.time() - start_time} sec")
                     start_time = time.time()
 
-            states_batch = tf.constant(episode.states, dtype=np.float32)
-            values_batch = self.critic(states_batch)
-
-            discounted_rewards_batch = tf.constant(episode.discounted_rewards, dtype=np.float32)
-            actions_batch = tf.constant(episode.actions, dtype=np.int32)
-            advantage_batch = discounted_rewards_batch - tf.reshape(values_batch, -1)
-
-            # noinspection PyArgumentList
-            action_probabilities = self.actor.get_probabilities(states_batch)
-            policy_outputs, actor_loss, log_probabilities = self.actor.train_step(
-                states_batch, actions_batch, advantage_batch)
-
-            values, critic_loss, _ = self.critic.train_step(states_batch, discounted_rewards_batch)
-
-            if self.env.state_names is not None:
-                for state_idx, state in enumerate(self.env.state_names):
-                    state_attribute_hist = states_batch[:, state_idx]
-                    wandb.log({f"{state}": wandb.Histogram(state_attribute_hist)}, step=training_steps)
-
-            if self.env.actions is not None:
-                for action_idx, action in enumerate(self.env.actions):
-                    action_attribute_hist = action_probabilities[:, action_idx]
-                    wandb.log({f"{action}": wandb.Histogram(action_attribute_hist)}, step=training_steps)
-
-            wandb.log({'training_step': training_steps, 'actor_loss': actor_loss,
-                       'critic_loss': critic_loss, 'episode_reward': episode.total_reward},
-                      step=training_steps)
-            try:
-                wandb.log({"log_probabilities": wandb.Histogram(log_probabilities)}, step=training_steps)
-            except ValueError:
-                logger.info(f"Failed to save log probabilities: {log_probabilities}")
-            wandb.log({"discounted_rewards": wandb.Histogram(discounted_rewards_batch)}, step=training_steps)
-            try:
-                wandb.log({"advantages": wandb.Histogram(advantage_batch)}, step=training_steps)
-            except ValueError:
-                logger.info(f"Failed to save advantages: {advantage_batch}")
-            try:
-                wandb.log({"values": wandb.Histogram(values_batch)}, step=training_steps)
-            except ValueError:
-                logger.info(f"Failed to save values: {values_batch}")
-
-            training_steps += 1
             self.ckpts_manager.step_checkpoints()
             if not i % progress_save:
                 self.ckpts_manager.save_progress_ckpts()
-                logger.info(f"Progress checkpoints saved for step {training_steps}")
+                logger.info(f"Progress checkpoints saved for step {i}")
             if training_config.save_policy_every is not None:
                 if not i % training_config.save_policy_every:
-                    if episode.total_reward >= best_score:
-                        best_score = episode.total_reward
+                    if episode_reward >= best_score:
+                        best_score = episode_reward
                         best_step = i
                         best_checkpoints = self.ckpts_manager.save_ckpts()
-                        logger.info(f"New best model - Reward = {episode.total_reward}")
-                        logger.info(f"Checkpoint saved for step {training_steps}")
+                        logger.info(f"New best model - Reward = {episode_reward}")
+                        logger.info(f"Checkpoint saved for step {i}")
 
-            if self.env.pass_test(train_steps_rewards[-20:]):
+            train_episodes_rewards.append(episode_reward)
+            if self.env.pass_test(train_episodes_rewards[-20:]):
                 logger.info("The agent trained successfully!!")
                 best_step = i
                 best_checkpoints = self.ckpts_manager.save_ckpts()
-                logger.info(f"New best model - Reward = {episode.total_reward}")
-                logger.info(f"Checkpoint saved for step {training_steps}")
+                logger.info(f"New best model - Reward = {episode_reward}")
+                logger.info(f"Checkpoint saved for step {i}")
                 break
 
         # Load best checkpoint and save it
@@ -165,7 +133,7 @@ class BaseActorCriticAgent(object):
         test_reward = self.test_agent(episodes=100)
         logger.info(f"Best model test: {100} episodes mean reward = {test_reward}")
         self.save_agent()
-        self.plot_training_info(train_steps_rewards, self.agent_path)
+        self.plot_training_info(train_episodes_rewards, self.agent_path)
 
         return test_reward
 
@@ -203,7 +171,7 @@ class BaseActorCriticAgent(object):
         # Moving average plot
         plt.plot([i for i in range(len(rewards))], rewards)
         plt.ylabel(f"Reward")
-        plt.xlabel("Training step #")
+        plt.xlabel("Episode #")
         plt.title("Rewards")
 
         if agent_folder is not None:
