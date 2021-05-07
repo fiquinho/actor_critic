@@ -86,9 +86,17 @@ class Environment(object):
         """Reset the environment to start a new episode."""
         raise NotImplementedError
 
-    def get_environment_state(self) -> np.array:
-        """Get the current state of the environment. Must be ready to feed to
-        the neural network.
+    def get_normalized_state(self) -> np.array:
+        """Get the current state of the environment with each
+        state attribute normalized in [0, 1], ready to be fed to a NN.
+
+        Returns:
+            The current normalized state (np.array)
+        """
+        raise NotImplementedError
+
+    def get_state(self) -> np.array:
+        """Get the current state of the environment.
 
         Returns:
             The current state (np.array)

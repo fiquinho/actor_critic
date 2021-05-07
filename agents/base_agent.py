@@ -55,7 +55,7 @@ class BaseActorCriticAgent(object):
         rewards = []
         actions = []
         while not done:
-            state = self.env.get_environment_state()
+            state = self.env.get_normalized_state()
             tf_current_state = tf.constant(np.array([state]), dtype=tf.float32)
             action = self.actor.produce_actions(tf_current_state)[0][0]
             next_state, reward, done = self.env.environment_step(int(action))
@@ -198,7 +198,7 @@ class BaseActorCriticAgent(object):
                 if delay is not None:
                     time.sleep(delay)
 
-            state = self.env.get_environment_state()
+            state = self.env.get_normalized_state()
             tf_current_state = tf.constant(np.array([state]), dtype=tf.float32)
             action = self.actor.produce_actions(tf_current_state)[0][0]
 

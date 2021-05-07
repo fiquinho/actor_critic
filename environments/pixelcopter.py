@@ -32,11 +32,22 @@ class PixelcopterEnvironment(Environment):
     def reset_environment(self):
         self.p.reset_game()
 
-    def get_environment_state(self) -> np.array:
+    def get_state(self) -> np.array:
         state = list(self.p.getGameState().values())
+        state = np.array(state)
+        return state
+
+    def get_normalized_state(self) -> np.array:
+        """Get the current state of the environment with each
+        state attribute normalized in [0, 1], ready to be fed to a NN.
+
+        Returns:
+            The current normalized state (np.array)
+        """
+
+        state = self.get_state()
         states_mins = np.array([0., -15., 0., 0., 0., 60., 140.])
         states_maxs = np.array([400., 15., 200., 200., 400., 260., 340.])
-        state = np.array(state)
         state = (state - states_mins) / (states_maxs - states_mins)
         return state
 
@@ -54,7 +65,7 @@ class PixelcopterEnvironment(Environment):
         done = self.p.game_over()
         if self.p.score() >= self.win_score:
             done = True
-        next_state = self.get_environment_state()
+        next_state = self.get_normalized_state()
         return next_state, reward, done
 
     def render_environment(self):
@@ -84,7 +95,7 @@ def main():
         print(f"Episode: {i}")
         done = False
         env.reset_environment()
-        print(f"Start state = {env.get_environment_state()}")
+        print(f"Start state = {env.get_normalized_state()}")
 
         while not done:
             action = np.random.randint(0, 2)

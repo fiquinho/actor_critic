@@ -22,7 +22,16 @@ class CartPoleEnvironment(Environment):
     def reset_environment(self):
         self.env.reset()
 
-    def get_environment_state(self) -> np.array:
+    def get_state(self) -> np.array:
+        return np.array(self.env.state)
+
+    def get_normalized_state(self) -> np.array:
+        """Get the current state of the environment with each
+        state attribute normalized in [0, 1], ready to be fed to a NN.
+
+        Returns:
+            The current normalized state (np.array)
+        """
         return np.array(self.env.state)
 
     def environment_step(self, action: int) -> (np.array, int, bool):
