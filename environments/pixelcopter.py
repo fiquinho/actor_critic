@@ -65,7 +65,7 @@ class PixelcopterEnvironment(Environment):
         done = self.p.game_over()
         if self.p.score() >= self.win_score:
             done = True
-        next_state = self.get_normalized_state()
+        next_state = self.get_state()
         return next_state, reward, done
 
     def render_environment(self):
