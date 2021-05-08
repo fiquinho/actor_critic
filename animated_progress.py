@@ -15,7 +15,7 @@ from agents import BaseActorCriticAgent
 tf.config.run_functions_eagerly(True)
 
 
-experiment_name = "cart_pole_default"
+experiment_name = "flappybird_REINFORCE_default"
 
 experiment_dir = Path("experiments", experiment_name)
 config_file = Path(experiment_dir, "configurations.json")
