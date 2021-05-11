@@ -46,6 +46,7 @@ class BatchActorCriticAgent(BaseActorCriticAgent):
         rewards_batch = tf.constant(episode.rewards, dtype=np.float32)
         advantage_batch = rewards_batch + self.config.agent_config.discount * tf.reshape(next_state_values, -1) - \
             tf.reshape(values, -1)
+        advantage_batch = tf.constant(advantage_batch, dtype=np.float32)
 
         action_probabilities = self.actor.get_probabilities(states_batch)
         actions_batch = tf.constant(episode.actions, dtype=np.int32)

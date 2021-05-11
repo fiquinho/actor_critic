@@ -37,6 +37,7 @@ class REINFORCEwBaselineAgent(BaseActorCriticAgent):
         values_batch = self.critic(states_batch)
         discounted_rewards_batch = tf.constant(episode.discounted_rewards, dtype=np.float32)
         advantage_batch = discounted_rewards_batch - tf.reshape(values_batch, -1)
+        advantage_batch = tf.constant(advantage_batch, dtype=np.float32)
 
         action_probabilities = self.actor.get_probabilities(states_batch)
         actions_batch = tf.constant(episode.actions, dtype=np.int32)
