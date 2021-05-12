@@ -58,7 +58,7 @@ class BaseActorCriticAgent(object):
             state = self.env.get_normalized_state()
             tf_current_state = tf.constant(np.array([state]), dtype=tf.float32)
             action = self.actor.produce_actions(tf_current_state)[0][0]
-            next_state, reward, done = self.env.environment_step(int(action))
+            _, reward, done = self.env.environment_step(int(action))
 
             states.append(state)
             actions.append(action)
@@ -68,7 +68,7 @@ class BaseActorCriticAgent(object):
 
         return episode
 
-    def train_step(self, step_n: int) -> int:
+    def train_step(self, step_n: int) -> (int, bool):
         """
         Make a single training step for this method
         Args:
@@ -76,6 +76,7 @@ class BaseActorCriticAgent(object):
 
         Returns:
             The total reward from the last completed episode
+            If the last episode finished or is still running
         """
         raise NotImplementedError()
 
@@ -96,7 +97,7 @@ class BaseActorCriticAgent(object):
         best_score = float("-inf")
         for i in tqdm(range(training_config.train_steps)):
 
-            episode_reward = self.train_step(i)
+            episode_reward, finished_episode = self.train_step(i)
 
             if training_config.show_every is not None:
                 if i > 0 and not i % training_config.show_every:
@@ -118,7 +119,8 @@ class BaseActorCriticAgent(object):
                         logger.info(f"New best model - Reward = {episode_reward}")
                         logger.info(f"Checkpoint saved for step {i}")
 
-            train_episodes_rewards.append(episode_reward)
+            if finished_episode:
+                train_episodes_rewards.append(episode_reward)
             if self.env.pass_test(train_episodes_rewards[-20:]):
                 logger.info("The agent trained successfully!!")
                 best_step = i

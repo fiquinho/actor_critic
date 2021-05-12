@@ -29,7 +29,7 @@ def main():
     # Load agent
     agent = BaseActorCriticAgent(agent_path=experiment_dir, config=config)
 
-    agent.load_model(Path(experiment_dir, "model"))
+    agent.load_model(Path(experiment_dir, "models"))
 
     results = []
     for i in range(args.episodes):

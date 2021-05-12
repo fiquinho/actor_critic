@@ -21,7 +21,7 @@ class REINFORCEwBaselineAgent(BaseActorCriticAgent):
 
         super().__init__(agent_path, config)
 
-    def train_step(self, step_n: int) -> int:
+    def train_step(self, step_n: int) -> (int, bool):
         """ Make a single training step for this method.
 
         Args:
@@ -29,6 +29,7 @@ class REINFORCEwBaselineAgent(BaseActorCriticAgent):
 
         Returns:
             The total reward from the last completed episode
+            If the last episode finished or is still running
         """
 
         episode = self.generate_episode()
@@ -76,4 +77,4 @@ class REINFORCEwBaselineAgent(BaseActorCriticAgent):
         except ValueError:
             logger.info(f"Failed to save values: {values}")
 
-        return episode.total_reward
+        return episode.total_reward, True
