@@ -14,7 +14,7 @@ sys.path.append(str(SCRIPT_DIR.parent.parent.parent.parent))
 
 from models import critic_feed_forward_model_constructor, feed_forward_discrete_policy_constructor
 from code_utils import ConfigManager, CheckpointsManager, TrainingConfig
-from environments import get_env, Episode
+from environments import get_env, Episode, Environment
 
 logger = logging.getLogger()
 
@@ -34,10 +34,11 @@ class BaseActorCriticAgent(object):
             agent_path: The output folder for the model files
             config: The configurations for this agent
         """
-        self.env = get_env(config.agent_config.env)()
+        self.env: Environment = get_env(config.agent_config.env)()
         self.agent_path = agent_path
         self.config = config
         self.models_path = Path(agent_path, "models")
+        self.periodic_test = False
 
         critic_constructor = critic_feed_forward_model_constructor(self.env.state_space_n)
         self.critic = critic_constructor(self.config.critic_config)
@@ -80,6 +81,18 @@ class BaseActorCriticAgent(object):
         """
         raise NotImplementedError()
 
+    def pass_test(self, **kwargs) -> bool:
+        """Standard test of agent
+
+        Args:
+            **kwargs:
+
+        Returns: If the agent solved the environment
+
+        """
+        train_episodes_rewards = kwargs["train_episodes_rewards"]
+        return self.env.pass_test(train_episodes_rewards[-20:])
+
     def train_policy(self, training_config: TrainingConfig) -> float:
         """Train the agent to solve the current environment.
 
@@ -99,19 +112,33 @@ class BaseActorCriticAgent(object):
 
             episode_reward, finished_episode = self.train_step(i)
 
-            if training_config.show_every is not None:
-                if i > 0 and not i % training_config.show_every:
+            self.ckpts_manager.step_checkpoints()
+
+            if not i % progress_save:
+                self.ckpts_manager.save_progress_ckpts()
+                logger.info(f"Progress checkpoints saved for step {i}")
+
+            # Log information and save policy if it improved
+            if training_config.save_policy_every is not None:
+                if not i % training_config.save_policy_every:
+
+                    if self.periodic_test:
+                        test_episode = self.generate_episode()
+                        episode_reward = test_episode.total_reward
+                        train_episodes_rewards.append(episode_reward)
+
+                    if episode_reward >= best_score:
+                        best_score = episode_reward
+                        best_step = i
+                        best_checkpoints = self.ckpts_manager.save_ckpts()
+                        logger.info(f"New best model - Reward = {episode_reward}")
+                        logger.info(f"Checkpoint saved for step {i}")
+
                     logger.info(f"Training step N° {i} - "
                                 f"Last Episode reward: {episode_reward} - "
                                 f"Batch time = {time.time() - start_time} sec")
                     start_time = time.time()
 
-            self.ckpts_manager.step_checkpoints()
-            if not i % progress_save:
-                self.ckpts_manager.save_progress_ckpts()
-                logger.info(f"Progress checkpoints saved for step {i}")
-            if training_config.save_policy_every is not None:
-                if not i % training_config.save_policy_every:
                     if episode_reward >= best_score:
                         best_score = episode_reward
                         best_step = i
@@ -121,7 +148,7 @@ class BaseActorCriticAgent(object):
 
             if finished_episode:
                 train_episodes_rewards.append(episode_reward)
-            if self.env.pass_test(train_episodes_rewards[-20:]):
+            if self.pass_test(train_episodes_rewards=train_episodes_rewards):
                 logger.info("The agent trained successfully!!")
                 best_step = i
                 best_checkpoints = self.ckpts_manager.save_ckpts()

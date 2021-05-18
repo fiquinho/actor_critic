@@ -16,7 +16,6 @@ from models import ActorConfig, CriticConfig
 class TrainingConfig(object):
     train_steps: int
     save_policy_every: int
-    show_every: int
 
 
 @dataclass
@@ -26,6 +25,10 @@ class BaseAgentConfig(object):
     env: str
     agent_type: str
     discount: float
+
+    # A2C
+    num_processes: int = None
+    batch_env_steps: int = None  # training_batch_size = batch_env_steps * num_processes
 
 
 class ConfigManager(object):

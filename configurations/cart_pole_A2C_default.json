@@ -1,0 +1,26 @@
+{
+  "agent_config": {
+    "name": "cart_pole_A2C_default_01",
+    "desc": "A2C training script on CartPole",
+    "env": "cart_pole",
+    "agent_type": "A2C",
+    "discount": 0.99,
+    "num_processes": 5,
+    "batch_env_steps": 20
+  },
+  "critic_config": {
+    "layer_sizes": [128, 64],
+    "learning_rate": 0.0001,
+    "hidden_activation": "relu",
+    "output_activation": "linear"
+  },
+  "actor_config": {
+    "layer_sizes": [128, 64],
+    "learning_rate": 0.0001,
+    "hidden_activation": "relu"
+  },
+  "training_config": {
+    "train_steps": 5000,
+    "save_policy_every": 50
+  }
+}
