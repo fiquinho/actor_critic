@@ -1,42 +1,31 @@
+import argparse
 from subprocess import call
 from pathlib import Path
 
 
-configs_dir = Path("C://", "Users", "Fico", "rl_experiments",
-                   "policy_gradient", "Pendulum-v0", "experiments_configurations", "21-10-20 - 2")
+def main():
+    parser = argparse.ArgumentParser(description="Execute multiple experiments from configurations files "
+                                                 "one after the other.",
+                                     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    required_named = parser.add_argument_group('REQUIRED named arguments')
+    required_named.add_argument("--configs_dir", type=str, required=True,
+                                help="All .json files in this folder must be accepted configurations files "
+                                     "to train agents.")
+    args = parser.parse_args()
 
-experiments = [
-    {
-        "name": "00.03",
-        "env": "Pendulum-v0",
-        "agent": "naive",
-        "config_file": str(Path(configs_dir, "naive_default.json")),
-        "desc": "Normalized rewards.",
-    },
-    {
-        "name": "00.03",
-        "env": "Pendulum-v0",
-        "agent": "reward_to_go",
-        "config_file": str(Path(configs_dir, "reward_to_go_default.json")),
-        "desc": "Normalized rewards.",
-    },
-    {
-        "name": "00.03",
-        "env": "Pendulum-v0",
-        "agent": "REINFORCE",
-        "config_file": str(Path(configs_dir, "REINFORCE_default.json")),
-        "desc": "Normalized rewards.",
-    }
+    configs_dir = Path(args.configs_dir)
 
-]
+    for config in configs_dir.iterdir():
 
-for config in experiments:
-    call_list = ["python", "train_agent.py",
-                 "--name", config["name"],
-                 "--config_file", config["config_file"],
-                 "--env", config["env"],
-                 "--agent", config["agent"],
-                 "--desc", config["desc"],
-                 "--replace"]
+        if config.suffix != ".json":
+            continue
 
-    call(call_list)
+        call_list = ["python", "train_agent.py",
+                     "--config_file", str(config),
+                     "--replace"]
+
+        call(call_list)
+
+
+if __name__ == '__main__':
+    main()
