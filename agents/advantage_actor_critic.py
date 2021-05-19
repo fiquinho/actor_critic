@@ -6,7 +6,7 @@ import wandb
 import tensorflow as tf
 import numpy as np
 
-from .base_agent import BaseActorCriticAgent, ConfigManager, Episode, get_env, Environment
+from .base_agent import BaseActorCriticAgent, ConfigManager, get_env, Environment
 from tensorflow.keras import Model
 
 

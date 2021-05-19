@@ -8,8 +8,8 @@ import time
 from pathlib import Path
 
 import wandb
-import git
 import tensorflow as tf
+from git import Repo
 
 from code_utils import prepare_file_logger, prepare_stream_logger, ConfigManager
 from agents import get_agent
@@ -25,17 +25,17 @@ CONFIGS_DIR = Path(SCRIPT_DIR.parent, "configurations")
 
 
 def main():
-    parser = argparse.ArgumentParser(description="Train an Actor-Critic agent that plays the several environments.",
+    parser = argparse.ArgumentParser(description="Train an Actor-Critic agent that plays a specific environment.",
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     required_named = parser.add_argument_group('REQUIRED named arguments')
     required_named.add_argument("--config_file", type=str, required=True,
                                 help="Configuration file for the experiment.")
     parser.add_argument("--output_dir", type=str, default=EXPERIMENTS_DIR,
-                        help="Where to save the experiments files")
+                        help="Where to save the experiment files")
     parser.add_argument("--debug", action="store_true", default=False,
                         help="Activate to run Tensorflow in eager mode.")
     parser.add_argument("--replace", action="store_true", default=False,
-                        help="Activate to replace old experiment in the output folder.")
+                        help="Activate to replace old experiment with the same name in the output folder.")
     args = parser.parse_args()
 
     # On debug mode all functions are executed normally (eager mode)
@@ -43,7 +43,7 @@ def main():
         tf.config.run_functions_eagerly(True)
 
     # Get git version
-    repo = git.Repo(search_parent_directories=True)
+    repo = Repo(search_parent_directories=True)
     sha = repo.head.object.hexsha
 
     # Use provided configurations file
