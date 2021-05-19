@@ -1,7 +1,8 @@
 # Actor-Critic methods for Reinforcement Learning
 
 This repository contains my own implementations of different actor-critic 
-methods.
+methods. It uses [Weights&Biases](https://wandb.ai/) 
+for training statistics and visualizations.
 
 Available implementations:
  - [REINFORCE with Critic as Baseline](#reinforce-with-baseline)
@@ -33,7 +34,7 @@ Here is an example to train a Batch Actor-Critic agent on CartPole with
 default configurations:
 
 ```
-python train_agent.py --config_file configurations/cart_pole_batchAC_default.json
+python train_agent.py --config_file configurations/cart_pole_batchAC.json
 ```
 
 To use new configurations just change the values of the file you are using, 

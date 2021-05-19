@@ -7,19 +7,18 @@
     "discount": 0.99
   },
   "critic_config": {
-    "layer_sizes": [40, 40],
+    "layer_sizes": [5, 5],
     "learning_rate": 0.001,
     "hidden_activation": "relu",
     "output_activation": "linear"
   },
   "actor_config": {
-    "layer_sizes": [40, 40],
+    "layer_sizes": [5, 5],
     "learning_rate": 0.001,
     "hidden_activation": "relu"
   },
   "training_config": {
     "train_steps": 50,
-    "save_policy_every": 5,
-    "show_every": 5
+    "save_policy_every": 5
   }
 }

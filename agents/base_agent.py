@@ -139,13 +139,6 @@ class BaseActorCriticAgent(object):
                                 f"Batch time = {time.time() - start_time} sec")
                     start_time = time.time()
 
-                    if episode_reward >= best_score:
-                        best_score = episode_reward
-                        best_step = i
-                        best_checkpoints = self.ckpts_manager.save_ckpts()
-                        logger.info(f"New best model - Reward = {episode_reward}")
-                        logger.info(f"Checkpoint saved for step {i}")
-
             if finished_episode:
                 train_episodes_rewards.append(episode_reward)
             if self.pass_test(train_episodes_rewards=train_episodes_rewards):

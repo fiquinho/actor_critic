@@ -1,9 +1,9 @@
 {
   "agent_config": {
-    "name": "cart_pole_onlineAC_default_03",
-    "desc": "Default configuration to train an online actor critic agent on CartPole",
+    "name": "cart_pole_batchAC",
+    "desc": "Default configuration to train a batch actor critic agent on CartPole",
     "env": "cart_pole",
-    "agent_type": "online_AC",
+    "agent_type": "batch_AC",
     "discount": 0.99
   },
   "critic_config": {
@@ -18,8 +18,7 @@
     "hidden_activation": "relu"
   },
   "training_config": {
-    "train_steps": 20000,
-    "save_policy_every": 100,
-    "show_every": 200
+    "train_steps": 2000,
+    "save_policy_every": 20
   }
 }
