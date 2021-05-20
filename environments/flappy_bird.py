@@ -47,8 +47,8 @@ class FlappyBirdEnvironment(Environment):
 
         state = self.get_state()
 
-        states_mins = np.array([0., -10., 0., 0., 0., 0., 0., 0.])
-        states_maxs = np.array([512., 10., 288 * 2., 512., 512., 288 * 2., 512., 512.])
+        states_mins = np.array([0., -10., 0., 0., 103., 103., 0., 103.])
+        states_maxs = np.array([410., 10., 288., 205., 308., 410., 205., 308.])
         state = (state - states_mins) / (states_maxs - states_mins)
         return state
 
