@@ -11,12 +11,6 @@ saved can get very big in memory size.
 | :------: | :------: | 
 | *Trained agent playing CartPole*    | *Trained agent playing FlappyBird* |
 
-![Trained agent playing CartPole](https://s3.gifyu.com/images/cart_pole_batchAC_06.gif)
-*Trained agent playing CartPole*
-
-![Trained agent playing FlappyBird](https://s3.gifyu.com/images/flappybird_A2C_06.gif)
-*Trained agent playing FlappyBird*
-
 Available implementations:
  - [REINFORCE with Critic as Baseline](#reinforce-with-baseline)
  - [Batch Actor-Critic](#batch-actor-critic)
