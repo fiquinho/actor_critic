@@ -1,14 +1,16 @@
 {
   "agent_config": {
-    "name": "flappybird_REINFORCE",
-    "desc": "Default configuration to train REINFORCE agent on FlappyBird",
+    "name": "flappybird_A2C",
+    "desc": "Default configuration to train A2C agent on FlappyBird",
     "env": "flappybird",
-    "agent_type": "REINFORCE",
-    "discount": 0.99
+    "agent_type": "A2C",
+    "discount": 0.99,
+    "num_processes": 5,
+    "batch_env_steps": 80
   },
   "critic_config": {
     "layer_sizes": [256, 128],
-    "learning_rate": 0.0001,
+    "learning_rate": 0.001,
     "hidden_activation": "relu",
     "output_activation": "linear"
   },
@@ -18,7 +20,7 @@
     "hidden_activation": "relu"
   },
   "training_config": {
-    "train_steps": 20000,
-    "save_policy_every": 200
+    "train_steps": 50000,
+    "save_policy_every": 500
   }
 }

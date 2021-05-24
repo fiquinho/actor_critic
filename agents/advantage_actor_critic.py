@@ -140,7 +140,7 @@ class A2C(BaseActorCriticAgent):
     """
     Implementing advantage actor critic (A2C) algorithm.
     I found several different implementation details for this
-    algorithm, so this is my own attempt to implement it.
+    algorithm, so this is my own attempt to do it.
     I'll be using the "online actor critic" from
     http://rail.eecs.berkeley.edu/deeprlcourse/static/slides/lec-6.pdf
     but with parallel environments (kind of) and a batched training.

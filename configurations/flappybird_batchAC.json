@@ -1,24 +1,24 @@
 {
   "agent_config": {
-    "name": "flappybird_REINFORCE",
-    "desc": "Default configuration to train REINFORCE agent on FlappyBird",
+    "name": "flappybird_batchAC",
+    "desc": "Default configuration to train batch actor critic agent on FlappyBird",
     "env": "flappybird",
-    "agent_type": "REINFORCE",
+    "agent_type": "batch_AC",
     "discount": 0.99
   },
   "critic_config": {
     "layer_sizes": [256, 128],
-    "learning_rate": 0.0001,
+    "learning_rate": 0.001,
     "hidden_activation": "relu",
     "output_activation": "linear"
   },
   "actor_config": {
     "layer_sizes": [256, 128],
-    "learning_rate": 0.0001,
+    "learning_rate": 0.00001,
     "hidden_activation": "relu"
   },
   "training_config": {
-    "train_steps": 20000,
-    "save_policy_every": 200
+    "train_steps": 200000,
+    "save_policy_every": 1000
   }
 }

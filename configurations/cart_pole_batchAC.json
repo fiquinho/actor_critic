@@ -1,7 +1,7 @@
 {
   "agent_config": {
     "name": "cart_pole_batchAC",
-    "desc": "Default configuration to train a batch actor critic agent on CartPole",
+    "desc": "Default configuration to train a Batch Actor Critic agent on CartPole",
     "env": "cart_pole",
     "agent_type": "batch_AC",
     "discount": 0.99

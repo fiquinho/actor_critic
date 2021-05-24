@@ -1,9 +1,9 @@
 {
   "agent_config": {
-    "name": "flappybird_REINFORCE",
-    "desc": "Default configuration to train REINFORCE agent on FlappyBird",
+    "name": "flappybird_onlineAC",
+    "desc": "Default configuration to train an Online Actor Critic agent on FlappyBird",
     "env": "flappybird",
-    "agent_type": "REINFORCE",
+    "agent_type": "online_AC",
     "discount": 0.99
   },
   "critic_config": {
@@ -18,7 +18,7 @@
     "hidden_activation": "relu"
   },
   "training_config": {
-    "train_steps": 20000,
-    "save_policy_every": 200
+    "train_steps": 1000000,
+    "save_policy_every": 5000
   }
 }

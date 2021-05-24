@@ -32,17 +32,19 @@ def main():
     agent.load_model(Path(experiment_dir, "models"))
 
     results = []
+    rewards = []
     for i in range(args.episodes):
         episode = agent.play_game(plot_game=args.render_games, delay=0.001)
         win = agent.env.win_condition(episode)
         results.append(win)
+        rewards.append(episode.total_reward)
 
         print(f"Episode = {i} - Total Reward = {episode.total_reward} - Victory = {win} - "
               f"Episode length = {len(episode)}")
 
     if results[0] is not None:
         print(f"Agent performance = {sum(results) * 100 / len(results)} % of Wins")
-
+        print(f"Mean reward = {sum(rewards) / len(rewards)}")
     agent.env.close()
 
 

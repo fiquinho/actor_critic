@@ -1,7 +1,7 @@
 {
   "agent_config": {
     "name": "cart_pole_onlineAC_default",
-    "desc": "Default configuration to train an online actor critic agent on CartPole",
+    "desc": "Default configuration to train an Online Actor Critic agent on CartPole",
     "env": "cart_pole",
     "agent_type": "online_AC",
     "discount": 0.99
